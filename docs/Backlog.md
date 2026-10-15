@@ -1,34 +1,25 @@
 ---
 doc_type: backlog
 version: "1.0"
-last_updated: [DATE]
+last_updated: 2026-10-15
+cross_references:
+  - purpose: current
+    repository: https://gitlab.com/smart-assets.io/gitlab-profile
+    checkout: ../../../SA/top-level-gitlab-profile
+    revision: master
+    path: docs/common/epic-task-structure.md
+    url: https://gitlab.com/smart-assets.io/gitlab-profile/-/blob/master/docs/common/epic-task-structure.md
 ---
 
 # Backlog
 
-<!--
-TEMPLATE USAGE INSTRUCTIONS:
-0. Update the frontmatter date when modifying this file
-   (Update version only for significant structural changes to template)
-1. Replace all [PROJECT_NAME] and [PROJECT_SPECIFIC] markers
-2. Add deferred or low-priority items here
-3. Move items to docs/ToDos.md when ready to work on them
-4. Remove these usage instruction comments before committing
--->
-
-This document captures deferred work, future ideas, and low-priority items that aren't ready for active development.
+This document captures deferred work, future ideas, and low-priority items that are not ready for active development. The frontmatter records the Epic Task Structure Reference.
 
 **Document Structure**
-- Active work: `docs/ToDos.md`
-- User stories: `docs/UserStories.md`
-- Completed work: `docs/CompletedTasks.md`
+- Active work: [ToDos.md](ToDos.md)
+- User stories: [UserStories.md](UserStories.md)
+- Completed work: [CompletedTasks.md](CompletedTasks.md)
 - Deferred work: This file (`docs/Backlog.md`)
-
-**For LLM assistance in multi-repo workspace:**
-See [Task Tracking Standard]([RELATIVE_PATH]/top-level-gitlab-profile/docs/common/task-tracking-standard.md)
-
-**For reference (GitLab):**
-[Task Tracking Standard](https://gitlab.com/smart-assets.io/gitlab-profile/-/blob/master/docs/common/task-tracking-standard.md)
 
 ---
 
@@ -40,109 +31,119 @@ Items are organized by category and rough priority within each category.
 
 ### Technical Debt
 
-Items that improve code quality, performance, or maintainability but aren't blocking active development.
-
----
-
-#### BACKLOG-TD-001: [PROJECT_SPECIFIC: Item Title]
-
-```yaml
----
-backlog_id: BACKLOG-TD-001
-title: "[PROJECT_SPECIFIC: Item Title]"
-category: technical_debt
-priority: p3
-added_at: [DATE]
-reason_deferred: "[PROJECT_SPECIFIC: Why this isn't active yet]"
-promotion_criteria:
-  - "[PROJECT_SPECIFIC: When should this become active?]"
----
-```
-
-**Description:** [PROJECT_SPECIFIC: What needs to be done?]
-
-**Benefit:** [PROJECT_SPECIFIC: Why is this valuable?]
+None yet.
 
 ---
 
 ### Feature Ideas
 
-Future features that have been identified but aren't yet prioritized.
-
----
-
-#### BACKLOG-FI-001: [PROJECT_SPECIFIC: Feature Idea Title]
+#### BACKLOG-FI-001: Wallet Connect for Claims
 
 ```yaml
 ---
 backlog_id: BACKLOG-FI-001
-title: "[PROJECT_SPECIFIC: Feature Idea Title]"
+title: "Claim with a connected wallet instead of a pasted address"
 category: feature_idea
 priority: p3
-added_at: [DATE]
-user_story: null         # Link when user story is created
-reason_deferred: "[PROJECT_SPECIFIC: Why this isn't active yet]"
+added_at: 2026-10-15
+reason_deferred: "No browser wallet for F1r3fly has a stable connect protocol yet. SATCHEL integration (EPIC-007) covers the main wallet"
 promotion_criteria:
-  - "[PROJECT_SPECIFIC: When should this become active?]"
+  - "A F1r3fly wallet connect protocol is published"
 ---
 ```
 
-**Description:** [PROJECT_SPECIFIC: What is the feature?]
+#### BACKLOG-FI-002: Claim History for Each Address
 
-**Value Proposition:** [PROJECT_SPECIFIC: Who benefits and how?]
+```yaml
+---
+backlog_id: BACKLOG-FI-002
+title: "Show the claim history of an address"
+category: feature_idea
+priority: p3
+added_at: 2026-10-15
+reason_deferred: "Not needed for the first test net launch"
+promotion_criteria:
+  - "Users or operators ask for it after v0.3.0"
+---
+```
 
 ---
 
 ### Research & Exploration
 
-Items that need investigation before they can become actionable tasks.
-
----
-
-#### BACKLOG-RE-001: [PROJECT_SPECIFIC: Research Topic]
+#### BACKLOG-RE-001: Report ASI Faucet Gaps Upstream
 
 ```yaml
 ---
 backlog_id: BACKLOG-RE-001
-title: "[PROJECT_SPECIFIC: Research Topic]"
+title: "Report the ASI faucet gaps to the ASI maintainers"
 category: research
-priority: p3
-added_at: [DATE]
-questions:
-  - "[PROJECT_SPECIFIC: Question to answer]"
-  - "[PROJECT_SPECIFIC: Another question]"
+priority: p2
+added_at: 2026-10-15
+reason_deferred: "Waits for design question Q11"
+promotion_criteria:
+  - "A maintainer approves contact with the ASI maintainers"
 ---
 ```
 
-**Context:** [PROJECT_SPECIFIC: Why is this research needed?]
+**Description:** Section 2.2 of [designs/faucet-architecture.md](designs/faucet-architecture.md) lists gaps in the ASI faucet at commit `2b333b4`. Two of them have a security effect: the balance ceiling unit error, and the private key in debug logs.
 
-**Expected Outcomes:** [PROJECT_SPECIFIC: What decisions will this inform?]
+#### BACKLOG-RE-002: Contract Wallet Support
+
+```yaml
+---
+backlog_id: BACKLOG-RE-002
+title: "Fund contract wallets such as MultiSigSystemVault"
+category: research
+priority: p3
+added_at: 2026-10-15
+reason_deferred: "No SATCHEL repository uses a contract wallet today (design question Q1)"
+promotion_criteria:
+  - "SATCHEL or another wallet adopts a contract wallet on F1r3fly"
+---
+```
 
 ---
 
 ### Dependencies & Blockers
 
-Items waiting on external factors (upstream releases, third-party APIs, etc.)
-
----
-
-#### BACKLOG-DB-001: [PROJECT_SPECIFIC: Blocked Item]
+#### BACKLOG-BE-002: Cosmos Addresses Through the ASI Bridge
 
 ```yaml
 ---
-backlog_id: BACKLOG-DB-001
-title: "[PROJECT_SPECIFIC: Blocked Item]"
+backlog_id: BACKLOG-BE-002
+title: "Analyze the ASI bridge and decide whether the faucet accepts Cosmos addresses"
 category: blocked_external
-priority: p2
-added_at: [DATE]
-blocked_by_external: "[PROJECT_SPECIFIC: What external factor?]"
-expected_resolution: "[PROJECT_SPECIFIC: When might this unblock?]"
+priority: p3
+added_at: 2026-10-15
+reason_deferred: "The ASI Chain bridge maps addresses, but it is not public. The maintainer will get access first (design question Q15)"
+promotion_criteria:
+  - "The maintainer has access to the ASI bridge and completes the analysis"
 ---
 ```
 
-**Description:** [PROJECT_SPECIFIC: What is blocked?]
+**Description:** The ASI Alliance projects are on [GitHub](https://github.com/asi-alliance). The ASI Chain wallet code shows only vault and ETH addresses. Cosmos address mapping happens in the ASI bridge.
 
-**When Unblocked:** [PROJECT_SPECIFIC: What should happen when this unblocks?]
+**When Unblocked:** Add a task to EPIC-007 if the faucet must accept Cosmos addresses.
+
+#### BACKLOG-BE-001: Neutral Client Endpoints
+
+```yaml
+---
+backlog_id: BACKLOG-BE-001
+title: "Wait for the neutral client endpoints of f1r3node-rust TASK-025-5"
+category: blocked_external
+priority: p2
+added_at: 2026-10-15
+reason_deferred: "The endpoints are not defined yet. PR #627 is open"
+promotion_criteria:
+  - "TASK-025-5 merges to f1r3node-rust dev"
+---
+```
+
+**Description:** EPIC-010 needs these endpoints for the Casanova and Cordial Miners adapters.
+
+**When Unblocked:** Start TASK-010-1.
 
 ---
 
@@ -173,11 +174,3 @@ When a backlog item is ready for active development:
 2. Create or link a user story in `docs/UserStories.md` if needed
 3. Remove the item from this backlog (or mark as `promoted: true`)
 4. Add a note referencing the original backlog ID
-
----
-
-## References
-
-- **Active Work:** `docs/ToDos.md`
-- **User Stories:** `docs/UserStories.md`
-- **Completed Work:** `docs/CompletedTasks.md`

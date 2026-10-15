@@ -24,11 +24,17 @@ This document archives completed epics and tasks for historical reference and pr
 - Completed work: This file (`docs/CompletedTasks.md`)
 - Deferred work: `docs/Backlog.md`
 
-**For LLM assistance in multi-repo workspace:**
-See [Task Tracking Standard]([RELATIVE_PATH]/top-level-gitlab-profile/docs/common/task-tracking-standard.md)
+The Epic Task Structure Reference in the top-level profile defines the epic format.
 
-**For reference (GitLab):**
-[Task Tracking Standard](https://gitlab.com/smart-assets.io/gitlab-profile/-/blob/master/docs/common/task-tracking-standard.md)
+```yaml cross-reference
+reference:
+  purpose: current
+  repository: https://gitlab.com/smart-assets.io/gitlab-profile
+  checkout: ../../../SA/top-level-gitlab-profile
+  revision: master
+  path: docs/common/epic-task-structure.md
+  url: https://gitlab.com/smart-assets.io/gitlab-profile/-/blob/master/docs/common/epic-task-structure.md
+```
 
 ---
 

@@ -10,14 +10,19 @@ F1r3Faucet is a general-purpose faucet and website for F1r3fly test net shards. 
 - **Website:** The site shows each test net, its shards, its consensus model, the shard status, and the observer endpoints.
 - **Model-neutral design:** Each test net runs one consensus model (`cbc-casper`, `casanova`, `cordial-miners`, or `rgb`). Each model connects through one adapter that implements a common interface. Do not put model-specific logic outside its adapter.
 - **Shard discovery:** A test net can start new shards and retire old shards. Get the shard list from the shard registry. Do not hard-code shards.
+- **Wallets of record:** SATCHEL, f1r3wallet, and the ASI Chain wallet. All three use the same vault address format
 - **First target:** The F1r3fly CbC Casper test net (EPIC-014 in `f1r3node-rust/docs/ToDos.md`, design record `f1r3node-rust/docs/plans/test-net.md`).
 
 ## Tech Stack
 
 - TypeScript in strict mode
-- Tailwind CSS
-- Node.js 24 LTS
-- The framework, package manager, and test runner are not selected yet. Record the selection in `README.md` and in this file when the project is scaffolded.
+- Web: Vite, React, and Tailwind CSS
+- API: Node.js 24 LTS with Fastify
+- Workspace and tests: pnpm, Vitest, and Playwright
+- Deploy signing in TypeScript, checked against golden vectors from `rust-client`
+- Hosting: OCI beside the test net
+- `docs/designs/stack-and-hosting.md` records these decisions (accepted 2026-10-15)
+- Never hard-code the token name. Each shard sets it at genesis, and the node returns it from its status call. Phlo is the fee unit and dust is the smallest token unit
 
 ## Security
 

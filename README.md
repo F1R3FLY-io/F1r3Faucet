@@ -8,13 +8,53 @@ F1r3fly separates execution (Rholang on the RSpace tuple space) from ordering. E
 
 ## Purpose
 
-- **Faucet:** Developers and partners request test tokens for an address on a chosen test net shard. Rate limits and abuse controls apply.
+- **Faucet:** Anyone who tests F1r3fly shards requests test tokens for an address on a chosen test net shard. Rate limits and abuse controls apply.
 - **Website:** The site lists the available test nets and shards, their consensus model, network status, and connection details (gRPC and HTTP endpoints of the read-only observers).
 - **Model-neutral:** One codebase covers every consensus model. Each model plugs in through an adapter instead of a fork.
 
+## Reference implementation
+
+F1r3Faucet follows the ASI Chain faucet, because F1r3fly is the base layer of ASI Chain. It keeps the ASI flow (sign a system vault transfer on the server, send it to a validator, track it to finality) and adds support for more than one network, more than one consensus model, and the wallets of record. It also closes gaps in the ASI faucet, for example a balance ceiling that never stops a claim and no rate limit. Section 2 of the [architecture record](docs/designs/faucet-architecture.md) gives the full review.
+
+[git@github.com:asi-alliance/asi-chain-faucet.git](https://github.com/asi-alliance/asi-chain-faucet)
+
+## Wallets of record
+
+The F1r3fly projects have three wallets of record. All three show the same vault address (`1111...`), derived from a secp256k1 public key. The faucet accepts that address, an ETH address, or a public key, and gives each wallet a prefill link.
+
+| Wallet | Faucet support | Release |
+|--------|----------------|---------|
+| [f1r3wallet](https://github.com/F1R3FLY-io/f1r3wallet) | Address forms and prefill link | v0.3.0 |
+| [ASI Chain wallet](https://github.com/asi-alliance/asi-chain-wallet) | Address forms and prefill link | v0.3.0 |
+| [SATCHEL](https://gitlab.com/smart-assets.io/satchel/rgb-satchel) | Public key input, wallet link, ownership proof on the RGB test net | v0.5.0 |
+
+SATCHEL deploys on the RGB test net first, and that test net needs the consensus and SMR boundary of f1r3node-rust EPIC-025. Section 3.1 of the [architecture record](docs/designs/faucet-architecture.md) gives the details.
+
 ## Context: the F1r3fly test nets
 
-Test net work is tracked in **EPIC-014: F1r3fly CbC Casper Test Net (Continuously Running Shards)** in [`f1r3node-rust/docs/ToDos.md`](https://github.com/F1R3FLY-io/f1r3node-rust/blob/dev/docs/ToDos.md). The design record is [`docs/plans/test-net.md`](https://github.com/F1R3FLY-io/f1r3node-rust/blob/dev/docs/plans/test-net.md).
+**EPIC-014** in f1r3node-rust tracks the CbC Casper test net. Its design record is `docs/plans/test-net.md` on the `ci/testnet-deployment` branch. **EPIC-025** (PR #627) tracks the boundary between node services and each consensus model. The records below pin both design documents at the commits that this plan used.
+
+[git@github.com:F1R3FLY-io/f1r3node-rust.git](https://github.com/F1R3FLY-io/f1r3node-rust)
+
+```yaml cross-reference
+reference:
+  purpose: evidence
+  repository: https://github.com/F1R3FLY-io/f1r3node-rust
+  checkout: ../f1r3node-rust
+  revision: 19bed60a334f86caa32e38ab4c10ce73b7b12287
+  path: docs/plans/test-net.md
+  url: https://github.com/F1R3FLY-io/f1r3node-rust/blob/19bed60a334f86caa32e38ab4c10ce73b7b12287/docs/plans/test-net.md
+```
+
+```yaml cross-reference
+reference:
+  purpose: evidence
+  repository: https://github.com/F1R3FLY-io/f1r3node-rust
+  checkout: ../f1r3node-rust
+  revision: 6609305bbde5a13ab6df4d1f0877bfbe53e74f2a
+  path: docs/designs/replication-boundary.md
+  url: https://github.com/F1R3FLY-io/f1r3node-rust/blob/6609305bbde5a13ab6df4d1f0877bfbe53e74f2a/docs/designs/replication-boundary.md
+```
 
 Points from that work that shape this repository:
 
@@ -32,42 +72,41 @@ The registry follows `test-net.md` Section 12.1. The faucet adds support for a m
 | CbC Casper | `cbc-casper` | Multi-parent PoS block DAG | EPIC-014, in progress | First target |
 | Casanova | `casanova` | Leaderless optimistic PoS block DAG | Not designed | Planned |
 | Cordial Miners | `cordial-miners` | Blocklace (partial order, then τ total order) | Not designed | Planned |
-| RGB | `rgb` | Peer-clique sidecar anchored to Bitcoin single-use seals and Lightning | Not designed | Planned; needs a different flow (client-side validation) |
+| RGB | `rgb` | Peer-clique sidecar anchored to Bitcoin single-use seals and Lightning | Not designed | Planned. Needs a different flow (client-side validation) |
 
 ## Architecture (proposed)
 
 ```mermaid
 flowchart LR
-    U[User browser] --> W[Website and faucet UI]
+    U[User or wallet of record] --> W[Web app]
     W --> API[Faucet API]
-    API --> RL[Rate limiting and abuse controls]
-    API --> REG[Shard registry]
-    API --> AD{Model adapter}
+    API --> RL[Abuse controls]
+    API --> REG[Network registry]
+    API --> Q[Signer queue]
+    Q --> AD{Model adapter}
     AD --> C[cbc-casper adapter]
-    AD --> CA[casanova adapter]
-    AD --> CM[cordial-miners adapter]
-    AD --> R[rgb adapter]
-    C --> O1[Observer / deploy endpoints<br/>CbC Casper test net shards]
-    CA -.-> O2[Casanova test net]
-    CM -.-> O3[Cordial Miners test net]
-    R -.-> O4[RGB peer clique + Bitcoin test network]
-    KEY[(Faucet wallet key<br/>from secret store)] --> API
+    AD -.-> CA[casanova adapter]
+    AD -.-> CM[cordial-miners adapter]
+    AD -.-> R[rgb adapter]
+    C --> V[Validator and observer APIs<br/>CbC Casper test net shards]
+    R -.-> B[RGB peer clique, Bitcoin test network, Lightning]
+    KEY[(Faucet wallet key<br/>from secret store)] --> Q
 ```
 
-Each model adapter implements one interface:
-
-- `getShards()`: list the live shards of the test net and their endpoints
-- `getStatus(shard)`: the health, height or order progress, and the finalized state
-- `validateAddress(address)`: check the address format of the model
-- `getBalance(shard, address)`: read a balance
-- `fund(shard, address, amount)`: submit the transfer and return a receipt that the UI can track
+Each model adapter implements one interface: `capabilities`, `networkInfo`, `progress`, `balance`, `submitTransfer`, and `status`. Only an adapter may contain logic that is specific to one model. Section 5 of the [architecture record](docs/designs/faucet-architecture.md) defines the interface, the network registry, the claim lifecycle, and the signer queue.
 
 ## Tech stack
 
 - **Language:** TypeScript (strict mode)
 - **Styling:** Tailwind CSS
 - **Runtime:** Node.js 24 LTS
-- **Package manager, framework, and test runner:** To be decided when the project is scaffolded
+- **Web:** Vite, React, and Tailwind CSS
+- **API:** Fastify
+- **Workspace and tests:** pnpm, Vitest, and Playwright
+- **Signing:** deploy signing in TypeScript
+- **Hosting:** OCI beside the test net
+
+The [stack and hosting record](docs/designs/stack-and-hosting.md) gives the reasons (accepted 2026-10-15)
 
 ## Getting started
 
@@ -83,11 +122,20 @@ Configuration comes from environment variables, for example the shard registry s
 
 ## Roadmap
 
-1. Scaffold the TypeScript and Tailwind CSS project, with lint, format, and test setup.
-2. Build the website shell: the test net and shard list, the status pages, and the connection details.
-3. Implement the `cbc-casper` adapter and the faucet flow against a local shard, then against the CbC Casper test net once EPIC-014 opens it.
-4. Add rate limiting, abuse controls, and faucet wallet balance alerts.
-5. Add an adapter for each further model when its test net exists (Casanova, Cordial Miners, RGB).
+| Release | Theme | Target |
+|---------|-------|--------|
+| v0.1.0 | Local CbC Casper faucet: client package, adapters, API | 2026-Q4 |
+| v0.2.0 | Website, abuse controls, and operations | 2027-Q1 |
+| v0.3.0 | CbC Casper test net launch on OCI, partner tier, and wallet links | 2027-Q1 |
+| v0.4.0 | Other consensus models, including RGB | 2027-Q2 |
+| v0.5.0 | SATCHEL on the RGB test net | 2027-Q3 |
+
+- [Roadmap](docs/roadmap.md): releases, gates, and sequence
+- [Tasks and epics](docs/ToDos.md): EPIC-001 to EPIC-010
+- [User stories](docs/UserStories.md)
+- [Architecture record and open questions](docs/designs/faucet-architecture.md)
+- [Stack and hosting record](docs/designs/stack-and-hosting.md)
+- [Node compatibility proposal](docs/designs/node-compatibility.md)
 
 ## Contributing
 
